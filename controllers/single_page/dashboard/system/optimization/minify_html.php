@@ -1,55 +1,55 @@
-<?php   
+<?php
+
 namespace Concrete\Package\MinifyHtml\Controller\SinglePage\Dashboard\System\Optimization;
 
-use Core;
-use Config;
-use PageList;
+use Concrete\Core\Config\Repository\Repository;
 use Concrete\Core\Page\Controller\DashboardPageController;
-use Concrete\Core\Attribute\Key\CollectionKey as CollectionAttributeKey;
+use Concrete\Core\Page\PageList;
+use Concrete\Core\Routing\Redirect;
+use Exception;
 
-class MinifyHtml extends DashboardPageController
+final class MinifyHtml extends DashboardPageController
 {
-	public function on_start()
+    public function view()
 	{
-		$this->error = Core::make('helper/validation/error');
+	    /** @var Repository $config */
+	    $config = $this->app->make(Repository::class);
 
-		$this->set('pages_with_minification_disabled', $this->getPagesWithMinificationDisabled());
+	    $this->set('pagesWithMinificationDisabled', $this->getPagesWithMinificationDisabled());
+	    $this->set('status', $config->get('minify_html.settings.status'));
+	    $this->set('enableForRegisteredUsers', $config->get('minify_html.settings.enable_for_registered_users'));
 	}
-
 	
 	public function save() 
 	{
-		if (Core::make('token')->validate('minify_html.settings') == false) {
-            $this->error->add(Core::make('token')->getErrorMessage());
+		if (!$this->app->make('token')->validate('minify_html.settings')) {
+            $this->error->add($this->app->make('token')->getErrorMessage());
+
             return;
         }
 
-        Config::save('minify_html.settings.status', (bool) $this->post('status'));
-        Config::save('minify_html.settings.enable_for_registered_users', (bool) $this->post('enable_for_registered_users'));
-		
-		$this->redirect($this->action('save_success'));
+        /** @var Repository $config */
+	    $config = $this->app->make(Repository::class);
+
+        $config->save('minify_html.settings.status', (bool) $this->post('status'));
+        $config->save('minify_html.settings.enable_for_registered_users', (bool) $this->post('enableForRegisteredUsers'));
+
+        $this->flash('success', t('Settings saved'));
+
+        return Redirect::to($this->action('view'));
 	}
-
-
-    public function save_success()
-	{
-		$this->set('message', t('Settings saved'));
-	}
-
 
 	/**
-	 * @return array
+	 * @return \Concrete\Core\Page\Page[]
 	 */
-	public function getPagesWithMinificationDisabled()
+	private function getPagesWithMinificationDisabled()
 	{
-		$ak_handle = "disable_html_minification";
-		$ak = CollectionAttributeKey::getByHandle($ak_handle);
-		if (!is_object($ak)) {
-			return array();
-		}
+	    try {
+            $pl = new PageList();
+            $pl->filterByAttribute('disable_html_minification', 1);
+            return $pl->getResults();
+        } catch (Exception $e) { }
 
-		$pl = new PageList();
-		$pl->filterByAttribute($ak_handle, 1);
-		return $pl->getResults();
+        return [];
 	}
 }

@@ -1,5 +1,6 @@
-<?php 
-namespace Concrete\Package\MinifyHtml\Src\MinifyHtml;
+<?php
+
+namespace A3020\MinifyHtml;
 
     /*
 

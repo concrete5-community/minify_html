@@ -1,42 +1,44 @@
-<?php 
+<?php
+
 namespace Concrete\Package\MinifyHtml;
 
-use Config;
-use BlockType;
-use Page;
-use Package;
-use SinglePage;
-use Concrete\Core\Support\Facade\Events;
-use Concrete\Core\Attribute\Key\CollectionKey as CollectionAttributeKey;
-use Concrete\Core\Attribute\Type as AttributeType;
-use Concrete\Package\MinifyHtml\Src\MinifyHtml\Controller as MinifyController;
+use A3020\MinifyHtml\Listener\PageOutput;
+use Concrete\Core\Attribute\Category\PageCategory;
+use Concrete\Core\Attribute\Key\CollectionKey;
+use Concrete\Core\Config\Repository\Repository;
+use Concrete\Core\Package\Package;
+use Concrete\Core\Page\Page;
+use Concrete\Core\Page\Single;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
-class Controller extends Package
+final class Controller extends Package
 {
     protected $pkgHandle = 'minify_html';
-    protected $appVersionRequired = '5.7.4';
-    protected $pkgVersion = '1.1.1';
-
-    protected $single_pages = array(
-        '/dashboard/system/optimization/minify_html' => array(
-            'cName' => 'Minify HTML'
-        )
-    );
+    protected $appVersionRequired = '8.4.0';
+    protected $pkgVersion = '2.0.0';
+    protected $pkgAutoloaderRegistries = [
+        'src/MinifyHtml' => '\A3020\MinifyHtml',
+    ];
 
     public function getPackageName()
     {
-        return t("Minify HTML");
+        return t('Minify HTML');
     }
 
     public function getPackageDescription()
     {
-        return t("Minify HTML output to decrease page load times");
+        return t('Minify HTML output to decrease page load times');
     }
 
     public function on_start()
     {
-        $controller = new MinifyController();
-        Events::addListener('on_page_output', array($controller, "boot"));
+        /** @var EventDispatcherInterface $dispatcher */
+        $dispatcher = $this->app->make(EventDispatcherInterface::class);
+        $dispatcher->addListener('on_page_output', function($event) {
+            /** @var PageOutput $listener */
+            $listener = $this->app->make(PageOutput::class);
+            $listener->handle($event);
+        });
     }
 
     public function install()
@@ -44,47 +46,66 @@ class Controller extends Package
         $pkg = parent::install();
 
         $this->installPages($pkg);
-
-        // Install CheckBox Attribute "disable_html_minification"
-        $bool = AttributeType::getByHandle('boolean');
-        $handle = "disable_html_minification";
-        $ak = CollectionAttributeKey::getByHandle($handle);
-        if (!is_object($ak)) {
-            CollectionAttributeKey::add($bool,
-                array('akHandle' => $handle,
-                    'akName' => t('Disable HTML minification'),
-                    'akIsSearchable' => false,
-                    'akCheckedByDefault' => true,
-                ), $pkg);
-        }
-
-        /**
-         * Enable the add-on.
-         * Can be disabled via Dashboard / Systems & Settings / Optimization / Minify HTML.
-         */
-        Config::save('minify_html.settings.status', true);
+        $this->installAttributes($pkg);
+        $this->enable();
     }
 
 
     /**
      * @param Package $pkg
+     *
      * @return void
      */
     protected function installPages($pkg)
     {
-        foreach ($this->single_pages as $path => $value) {
-            if (!is_array($value)) {
-                $path = $value;
-                $value = array();
-            }
+        foreach ([
+            '/dashboard/system/optimization/minify_html' => 'Minify HTML',
+        ] as $path => $name) {
             $page = Page::getByPath($path);
             if (!$page || $page->isError()) {
-                $single_page = SinglePage::add($path, $pkg);
-
-                if ($value) {
-                    $single_page->update($value);
-                }
+                $singlePage = Single::add($path, $pkg);
+                $singlePage->update([
+                    'cName' => $name,
+                ]);
             }
         }
+    }
+
+    /**
+     * @param Package $pkg
+     *
+     * @return void
+     */
+    private function installAttributes($pkg)
+    {
+        $handle = 'disable_html_minification';
+        if (is_object(CollectionKey::getByHandle($handle))) {
+            return;
+        }
+
+        /** @var PageCategory $category */
+        $category = $this->app->make(PageCategory::class);
+
+        $category
+            ->add('boolean',
+            [
+                'akHandle' => $handle,
+                'akName' => t('Disable HTML minification'),
+                'akIsSearchable' => false,
+                'akCheckedByDefault' => true,
+            ], $pkg
+        );
+    }
+
+     /**
+      * Enable the add-on.
+      *
+      * Minify HTML can be disabled via Dashboard / Systems & Settings / Optimization / Minify HTML.
+      */
+    private function enable()
+    {
+        /** @var Repository $config */
+        $config = $this->app->make(Repository::class);
+        $config->save('minify_html.settings.status', true);
     }
 }
