@@ -1,6 +1,7 @@
 <?php   
 defined('C5_EXECUTE') or die('Access Denied.');
 
+$form = Core::make('helper/form');
 $token = Core::make('token');
 ?>
 

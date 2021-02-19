@@ -15,7 +15,7 @@ class Controller extends Package
 {
     protected $pkgHandle = 'minify_html';
     protected $appVersionRequired = '5.7.4';
-    protected $pkgVersion = '1.1';
+    protected $pkgVersion = '1.1.1';
 
     protected $single_pages = array(
         '/dashboard/system/optimization/minify_html' => array(
