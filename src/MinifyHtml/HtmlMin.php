@@ -83,8 +83,9 @@ class HtmlMin{
                 if($c==null){
                     continue;
                 }
-                if($c->nodeType==3){
-                    $c->nodeValue = ltrim($c->nodeValue);
+                if($c->nodeType == 3){
+                    // remove > 1 spaces
+                    $c->nodeValue = preg_replace('/\s+/', ' ', $c->nodeValue);
                 }
             }
         }
