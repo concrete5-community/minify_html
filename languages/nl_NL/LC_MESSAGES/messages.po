@@ -1,0 +1,46 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: minify_html 0.9.2\n"
+"Report-Msgid-Bugs-To: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"POT-Creation-Date: 2016-03-27T08:38:27+00:00\n"
+"PO-Revision-Date: 2016-03-27 10:39+0200\n"
+"Language: nl_NL\n"
+"Plural-Forms: nplurals=2; plural=n != 1;\n"
+"X-Generator: Poedit 1.8.6\n"
+
+#: packages/minify_html/controller.php:27
+msgid "Minify HTML"
+msgstr "Comprimeer HTML"
+
+#: packages/minify_html/controller.php:32
+msgid "Minify HTML output to decrease page load times"
+msgstr "Comprimeer HTML om laadtijden te verkleinen"
+
+#: packages/minify_html/controller.php:54
+msgid "Disable HTML minification"
+msgstr "Schakel HTML compressie uit "
+
+#: packages/minify_html/controllers/single_page/dashboard/system/optimization/minify_html.php:36
+msgid "Settings saved"
+msgstr "Instellingen opgeslagen"
+
+#: packages/minify_html/single_pages/dashboard/system/optimization/minify_html.php:12
+msgid "Enable HTML minification"
+msgstr "Schakel HTML compressie in"
+
+#: packages/minify_html/single_pages/dashboard/system/optimization/minify_html.php:17
+msgid "Enable for Registered Users"
+msgstr "Inschakelen voor geregistreerde gebruikers"
+
+#: packages/minify_html/single_pages/dashboard/system/optimization/minify_html.php:24
+msgid "Pages with minification disabled"
+msgstr "Pagina’s met compressie uitgeschakeld"
+
+#: packages/minify_html/single_pages/dashboard/system/optimization/minify_html.php:38
+msgid "Save"
+msgstr "Opslaan"
